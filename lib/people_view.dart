@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:generic_bloc/bloc/generic_bloc.dart';
@@ -11,6 +13,20 @@ class PeopleView extends StatelessWidget {
     return BlocProvider(
       create: (context) => GenericBloc<Person>(),
       child: Scaffold(
+        floatingActionButton: Builder(
+          builder: (context) {
+            return FloatingActionButton(
+              onPressed: () {
+                context.read<GenericBloc<Person>>().add(GenericActionCustom(
+                      () async {
+                        log("Generic action - person");
+                      },
+                    ));
+              },
+              child: const Icon(Icons.refresh),
+            );
+          }
+        ),
         appBar: AppBar(
           title: const Text('People'),
         ),

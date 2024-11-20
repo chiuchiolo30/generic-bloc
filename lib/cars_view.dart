@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:generic_bloc/bloc/generic_bloc.dart';
@@ -11,6 +13,20 @@ class CarsView extends StatelessWidget {
     return BlocProvider(
       create: (context) => GenericBloc<Car>(),
       child: Scaffold(
+        floatingActionButton: Builder(
+          builder: (context) {
+            return FloatingActionButton(
+              onPressed: () {
+                context.read<GenericBloc<Car>>().add(GenericActionCustom(
+                      () async {
+                        log("Generic action - cars");
+                      },
+                    ));
+              },
+              child: const Icon(Icons.refresh),
+            );
+          }
+        ),
         appBar: AppBar(
           title: const Text('Cars'),
         ),
@@ -29,7 +45,8 @@ class CarsView extends StatelessWidget {
                 itemBuilder: (context, index) {
                   return ListTile(
                     title: Text(state.data[index].brand),
-                    subtitle: Text(state.data[index].model),
+                    subtitle: Text(
+                        "${state.data[index].model} (${state.data[index].year})"),
                   );
                 },
               );
