@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:generic_bloc/db.dart';
@@ -20,41 +22,59 @@ Future<List<T>> getData<T>() async {
 
 class GenericBloc<T> extends Bloc<GenericEvent, GenericState> {
   GenericBloc() : super(GenericInitial()) {
-    on<GenericEvent>((event, emit) async {
-      if (event is GenericLoad) {
-        emit(GenericLoadInProgress());
-        final data = await getData<T>();
-        emit(GenericLoadSuccess<T>(data));
-      }
+    on<GenericLoad>(_onLoad);
+    on<GenericAdd>(_genericAdd);
+    on<GenericDelete>(_genericDelete);
+    on<GenericUpdate>(_genericUpdate);
+    on<GenericActionCustom>(_genericActionCustom);
+  }
+  FutureOr<void> _onLoad(
+    GenericLoad event,
+    Emitter<GenericState> emit,
+  ) async {
+    emit(GenericLoadInProgress());
+    final data = await getData<T>();
+    emit(GenericLoadSuccess<T>(data));
+  }
 
-      if (event is GenericAdd) {
-        if (state is GenericLoadSuccess<T>) {
-          final updatedData =
-              List<T>.from((state as GenericLoadSuccess<T>).data)
-                ..add(event.item);
-          emit(GenericLoadSuccess(updatedData));
-        }
-      }
-      if (event is GenericDelete) {
-        if (state is GenericLoadSuccess<T>) {
-          final updatedData =
-              List<T>.from((state as GenericLoadSuccess<T>).data)
-                ..remove(event.item);
-          emit(GenericLoadSuccess(updatedData));
-        }
-      }
-      if (event is GenericUpdate) {
-        if (state is GenericLoadSuccess<T>) {
-          final index = (state as GenericLoadSuccess<T>).data.indexOf(event.item);
-          final updatedData =
-              List<T>.from((state as GenericLoadSuccess<T>).data)
-                ..[index] = event.item;
-          emit(GenericLoadSuccess(updatedData));
-        }
-      }
-      if (event is GenericActionCustom) {
-        event.action();
-      }
-    });
+  FutureOr<void> _genericAdd(
+    GenericAdd event,
+    Emitter<GenericState> emit,
+  ) async {
+    if (state is GenericLoadSuccess<T>) {
+      final updatedData = List<T>.from((state as GenericLoadSuccess<T>).data)
+        ..add(event.item);
+      emit(GenericLoadSuccess(updatedData));
+    }
+  }
+
+  FutureOr<void> _genericDelete(
+    GenericDelete event,
+    Emitter<GenericState> emit,
+  ) async {
+    if (state is GenericLoadSuccess<T>) {
+      final updatedData = List<T>.from((state as GenericLoadSuccess<T>).data)
+        ..remove(event.item);
+      emit(GenericLoadSuccess(updatedData));
+    }
+  }
+
+  FutureOr<void> _genericUpdate(
+    GenericUpdate event,
+    Emitter<GenericState> emit,
+  ) async {
+    if (state is GenericLoadSuccess<T>) {
+      final index = (state as GenericLoadSuccess<T>).data.indexOf(event.item);
+      final updatedData = List<T>.from((state as GenericLoadSuccess<T>).data)
+        ..[index] = event.item;
+      emit(GenericLoadSuccess(updatedData));
+    }
+  }
+
+  FutureOr<void> _genericActionCustom(
+    GenericActionCustom event,
+    Emitter<GenericState> emit,
+  ) async {
+    event.action();
   }
 }
